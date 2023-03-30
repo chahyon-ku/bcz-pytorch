@@ -1,4 +1,4 @@
-name: rlbench
+name: bcz
 channels:
   - conda-forge
   - pytorch

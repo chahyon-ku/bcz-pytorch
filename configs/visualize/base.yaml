@@ -1,0 +1,11 @@
+defaults:
+  - ../envs/base.yaml@_global_
+  - ../tasks/reach_target.yaml@_global_
+
+demos:
+  amount: 10
+  live_demos: False
+  image_paths: True
+  max_attempts: 1
+  random_selection: False
+  from_episode_number: 0

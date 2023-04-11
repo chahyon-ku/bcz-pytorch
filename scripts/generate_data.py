@@ -26,20 +26,20 @@ from absl import flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('save_path',
-                    '/home/rpm/Class/CSCI5890-DEEPROB/bc-z/bcz-pytorch/data',
+                    '/home/rpm/Class/CSCI5890-DEEPROB/bc-z/bcz-pytorch/data_1000',
                     'Where to save the demos.')
-flags.DEFINE_list('tasks', ['reach_target', 'pick_and_lift', 'stack_blocks'],
+flags.DEFINE_list('tasks', ['reach_target'],
                   'The tasks to collect. If empty, all tasks are collected.')
-flags.DEFINE_list('image_size', [128, 128],
+flags.DEFINE_list('image_size', [256, 256],
                   'The size of the images tp save.')
 flags.DEFINE_enum('renderer',  'opengl3', ['opengl', 'opengl3'],
                   'The renderer to use. opengl does not include shadows, '
                   'but is faster.')
 flags.DEFINE_integer('processes', 10,
                      'The number of parallel processes during collection.')
-flags.DEFINE_integer('episodes_per_task', 200,
+flags.DEFINE_integer('episodes_per_task', 1000,
                      'The number of episodes to collect per task.')
-flags.DEFINE_integer('variations', -1,
+flags.DEFINE_integer('variations', 1,
                      'Number of variations to collect per task. -1 for all.')
 
 

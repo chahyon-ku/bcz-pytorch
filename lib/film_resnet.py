@@ -11,18 +11,18 @@ from typing import List, Type, Any, Callable, Union, Optional, Tuple
 class FilmGenerator(nn.Module):
     def __init__(self, task_embed_dim) -> None:
         super(FilmGenerator, self).__init__()
-        self.fc = nn.Linear(task_embed_dim, 2 * (64 + 128 + 256 + 512))
+        self.fc = nn.Linear(task_embed_dim, 2 * (128 + 256 + 512 + 1024))
 
     def forward(self, task_embed: torch.Tensor) -> torch.Tensor:
         out = self.fc(task_embed)
-        gamma = [out[:, :64, None, None],
-                 out[:, 64:192, None, None],
-                 out[:, 192:448, None, None],
-                 out[:, 448:960, None, None]]
-        beta = [out[:, 960:1024, None, None],
-                out[:, 1024:1152, None, None],
-                out[:, 1152:1408, None, None],
-                out[:, 1408:1920, None, None]]
+        gamma = [out[:, :128, None, None],
+                 out[:, 128:384, None, None],
+                 out[:, 384:896, None, None],
+                 out[:, 896:1920, None, None]]
+        beta = [out[:, 1920:2048, None, None],
+                out[:, 2048:2304, None, None],
+                out[:, 2304:2816, None, None],
+                out[:, 2816:3840, None, None]]
 
         return gamma, beta
 
@@ -42,7 +42,9 @@ class FilmBlock(torchvision.models.resnet.BasicBlock):
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = gamma * out + beta
+        gamma, new_gamma = gamma[:, :out.shape[1]], gamma[:, out.shape[1]:]
+        beta, new_beta = beta[:, :out.shape[1]], beta[:, out.shape[1]:]
+        # out = gamma * out + beta
 
         if self.downsample is not None:
             identity = self.downsample(x)
@@ -50,7 +52,7 @@ class FilmBlock(torchvision.models.resnet.BasicBlock):
         out += identity
         out = self.relu(out)
 
-        return out, gamma, beta
+        return out, new_gamma, new_beta
 
 
 class FilmResnet(torchvision.models.resnet.ResNet):

@@ -1,0 +1,54 @@
+
+
+environment:
+  _target_: rlbench.Environment
+  action_mode:
+    _target_: rlbench.action_modes.action_mode.MoveArmThenGripper
+    arm_action_mode:
+      _target_: rlbench.action_modes.arm_action_modes.EndEffectorPoseViaIK
+    gripper_action_mode:
+      _target_: rlbench.action_modes.gripper_action_modes.Discrete
+  dataset_root: data
+  obs_config:
+    _target_: rlbench.observation_config.ObservationConfig
+    left_shoulder_camera:
+      _target_: rlbench.observation_config.CameraConfig
+      image_size:
+        - 256
+        - 256
+      rgb: True
+      depth: False
+      mask: False
+    right_shoulder_camera:
+      _target_: rlbench.observation_config.CameraConfig
+      image_size:
+        - 256
+        - 256
+      rgb: True
+      depth: False
+      mask: False
+    overhead_camera:
+      _target_: rlbench.observation_config.CameraConfig
+      image_size:
+        - 256
+        - 256
+      rgb: True
+      depth: False
+      mask: False
+    wrist_camera:
+      _target_: rlbench.observation_config.CameraConfig
+      image_size:
+        - 256
+        - 256
+      rgb: True
+      depth: False
+      mask: False
+    front_camera:
+      _target_: rlbench.observation_config.CameraConfig
+      image_size:
+        - 256
+        - 256
+      rgb: True
+      depth: False
+      mask: False
+  headless: True

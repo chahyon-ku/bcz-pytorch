@@ -2,3 +2,7 @@
 /data
 /outputs
 /.vscode
+__pycache__
+/data_1000
+/wandb
+/train

@@ -1,0 +1,32 @@
+hydra:
+  run:
+    dir: ./outputs/test-reach_target-${now:%Y.%m.%d-%H.%M.%S}
+
+defaults:
+  - ../envs/base.yaml@_global_/test
+  - ../tasks/reach_target.yaml@_global_/test
+  - _self_
+
+model:
+  _target_: lib.bcz_model.BCZModel
+  vision_encoder:
+    _target_: lib.film_resnet.film_resnet18
+    task_embed_dim: 768
+  policy_decoder:
+    _target_: lib.mlp_decoder.MLPDecoder
+  model_path: /home/rpm/Class/CSCI5890-DEEPROB/bc-z/bcz-pytorch/outputs/train-reach_target-2023.04.06-22.26.51/model_5000.pt
+
+language_encoder:
+  _target_: sentence_transformers.SentenceTransformer
+  model_name_or_path: bert-base-nli-mean-tokens
+  cache_folder: cache
+
+test:
+  _target_: test.test
+  n_episodes: 10
+  n_steps_per_episode: 100
+  device: cuda:0
+
+wandb:
+  project: bcz-pytorch
+  tags: [reach_target, single_task, test]

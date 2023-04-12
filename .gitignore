@@ -7,4 +7,4 @@ __pycache__
 /wandb
 /train
 /data*
-/test_model
+/models

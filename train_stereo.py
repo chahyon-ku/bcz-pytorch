@@ -21,7 +21,7 @@ from hydra.core.hydra_config import HydraConfig
 os.environ['TOKENIZERS_PARALLELISM']='true'
 
 
-@hydra.main(version_base=None, config_path='./configs/train/single_task', config_name='reach_target_carl')
+@hydra.main(version_base=None, config_path='./configs/train/single_task', config_name='reach_target_stereo')
 def main(cfg: DictConfig) -> None:
     output_dir = HydraConfig.get().run.dir
     input(cfg)
@@ -69,26 +69,27 @@ def main(cfg: DictConfig) -> None:
             for g in optimizer.param_groups:
                 g['lr'] = 5e-5
         try:
-            image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            image, image2, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
         except StopIteration:
             print('restarting train dataloader')
             train_dataloader_iter = iter(train_dataloader)
-            image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            image, image2, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
         model.train()
         image = image.to(cfg.train.device)
+        image2 = image2.to(cfg.train.device)
         action = xyz.to(cfg.train.device)
-        # if step <= 10:
+        # if step <= 1:
         #     print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
-        #     plt.imshow(image[0].permute(1, 2, 0).cpu().numpy())
+        #     plt.imshow(image2[0].permute(1, 2, 0).cpu().numpy())
         #     plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
         #     plt.show()
         task_embed = task_embed.to(cfg.train.device)
         optimizer.zero_grad()
-        pred_action = model.forward(image)
+        pred_action = model.forward(image, image2)
         # input(pred_action[1].shape)
         # input(action[1].shape)
         # scale action y z by 10
-        action_scale = 20
+        action_scale = 40
         loss = loss_fn(pred_action, action_scale*action[:, 0, :])*100
         if step % 100 == 0:
             print('pred_action', pred_action[0].detach().cpu().numpy())

@@ -63,7 +63,7 @@ class BC(nn.Module):
         # xyz = curr_xyz + xyz
         # print('yz prediction: ', yz)
         # print('yz shape', yz.shape)
-        curr_xyz += xyz/40
+        curr_xyz += xyz/20
         # axangle = curr_axangle + axangle
         # axangle = curr_axangle
         # quat = R.from_rotvec(axangle).as_quat()

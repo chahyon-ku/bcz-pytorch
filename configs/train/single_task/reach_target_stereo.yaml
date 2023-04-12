@@ -1,6 +1,6 @@
 hydra:
   run:
-    dir: ./train/train-reach_target-${now:%Y.%m.%d-%H.%M.%S}
+    dir: ./train/train-reach_target_stereo-${now:%Y.%m.%d-%H.%M.%S}
 
 defaults:
   - _self_
@@ -20,10 +20,10 @@ environment:
   headless: True
 
 train_dataset:
-  _target_: lib.demo_dataset.DemoDataset
+  _target_: lib.demo_dataset_stereo.DemoDataset
   variations: [0]
   demos_config:
-    amount: 64
+    amount: 128
     image_paths: True
     dataset_root: data_reach_target
     task_name: reach_target
@@ -47,7 +47,7 @@ train_dataloader:
   persistent_workers: True
 
 model:
-  _target_: lib.model_xyz.BC
+  _target_: lib.model_stereo.BC
   freeze: False
 
 optimizer:
@@ -57,14 +57,14 @@ optimizer:
 train:
   n_steps: 15000
   log_interval: 50
-  eval_interval: 5000
-  save_interval: 5000
+  eval_interval: 3000
+  save_interval: 3000
   device: cuda:1
 
 test:
   _target_: test.test
-  n_episodes: 4
-  n_steps_per_episode: 100
+  n_episodes: 20
+  n_steps_per_episode: 80
   device: cuda:1
   task: rlbench.tasks.reach_target.ReachTarget
 

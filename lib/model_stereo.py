@@ -52,7 +52,8 @@ class BC(nn.Module):
         # task_embed: (512,)
         device = 'cuda:1'
         image = TF.to_tensor(Image.fromarray(obs.front_rgb)).unsqueeze(0).to(device)
-        xyz = self.forward(image)
+        image2 = TF.to_tensor(Image.fromarray(obs.left_shoulder_rgb)).unsqueeze(0).to(device)
+        xyz = self.forward(image, image2)
         
         # show this image
         # image = image.detach().cpu().numpy()[0]

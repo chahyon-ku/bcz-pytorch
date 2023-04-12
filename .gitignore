@@ -6,3 +6,5 @@ __pycache__
 /data_1000
 /wandb
 /train
+/data*
+/test_model

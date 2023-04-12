@@ -47,7 +47,7 @@ train_dataloader:
   persistent_workers: True
 
 model:
-  _target_: lib.model.BC
+  _target_: lib.model_xyz.BC
   freeze: False
 
 optimizer:
@@ -55,9 +55,9 @@ optimizer:
   lr: 1e-3
 
 train:
-  n_steps: 12000
+  n_steps: 15000
   log_interval: 50
-  eval_interval: 4000
+  eval_interval: 15000
   save_interval: 4000
   device: cuda:1
 

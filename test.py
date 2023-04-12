@@ -30,10 +30,10 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
     rgbs = []
     for i_episode in range(n_episodes):
         rgbs.append([])
-        if i_episode % 2 == 0:
-            task.set_variation(1)
-        else:
-            task.set_variation(2)
+        # if i_episode % 2 == 0:
+        task.set_variation(0)
+        # else:
+        #     task.set_variation(2)
         descriptions, obs = task.reset()
         description = descriptions[0]
         task_embed = language_encoder.encode([description])[0]

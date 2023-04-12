@@ -60,8 +60,6 @@ def main(cfg: DictConfig) -> None:
     step_tqdm = tqdm.tqdm(range(1, cfg.train.n_steps + 1))
     train_losses = {}
     best_val_loss = float('inf')
-    max_y = -1
-    min_y = 1
     for step in step_tqdm:
         model.train()
         if step == 6000:
@@ -90,16 +88,11 @@ def main(cfg: DictConfig) -> None:
         # input(pred_action[1].shape)
         # input(action[1].shape)
         # scale action y z by 10
-        loss = loss_fn(pred_action, 20*action[:, 0, 1:])*200
-        # print('pred_action', pred_action[0].detach().cpu().numpy())
-        # print('action', 20*action[0, 0, 1:].detach().cpu().numpy())
-        # y = pred_action[0].detach().cpu().numpy()[0]
-        # if y > max_y:
-        #     max_y = y
-        #     print('max_y', max_y)
-        # if y < min_y:
-        #     min_y = y
-        #     print('min_y', min_y)
+        action_scale = 40
+        loss = loss_fn(pred_action, action_scale*action[:, 0, :])*100
+        if step % 100 == 0:
+            print('pred_action', pred_action[0].detach().cpu().numpy())
+            print('action', action_scale*action[0, 0, :].detach().cpu().numpy())
             
         loss.backward()
         optimizer.step()

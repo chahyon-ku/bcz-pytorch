@@ -28,7 +28,7 @@ def main(cfg: DictConfig) -> None:
 
     logging.getLogger('sentence_transformers.SentenceTransformer').setLevel(logging.ERROR)
     task_embeds = {'reach_target': []}
-    language_encoder = sentence_transformers.SentenceTransformer('bert-base-nli-mean-tokens', cache_folder='cache')
+    language_encoder = sentence_transformers.SentenceTransformer('bert-base-nli-mean-tokens', cache_folder='cache', device=cfg.train.device)
     for variation in range(13):
         color_name, _ = colors[variation]
         languages = ['reach the %s target' % color_name,
@@ -62,14 +62,13 @@ def main(cfg: DictConfig) -> None:
         try:
             image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
         except StopIteration:
-            print('restarting train dataloader')
             train_dataloader_iter = iter(train_dataloader)
             image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
         model.train()
         image = image.to(cfg.train.device)
         if step == 1:
             print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
-            plt.imshow(image[0].permute(1, 2, 0).cpu().numpy())
+            plt.imshow(image[0, 0, 0].permute(1, 2, 0).cpu().numpy())
             plt.show()
         task_embed = task_embed.to(cfg.train.device)
         action = xyz.to(cfg.train.device), axangle.to(cfg.train.device), gripper.to(cfg.train.device)
@@ -90,7 +89,7 @@ def main(cfg: DictConfig) -> None:
             train_losses = {}
 
         if step % cfg.train.eval_interval == 0:
-            success_rate, rgbs = hydra.utils.instantiate(cfg.test, model=model, language_encoder=language_encoder, environment=environment)
+            success_rate, rgbs = hydra.utils.instantiate(cfg.test, model=model, language_encoder=language_encoder, environment=environment, device=cfg.train.device)
             wandb.log({'test/success_rate': success_rate}, step=step)
             wandb.log({'test/rgb': [wandb.Video(np.stack(rgb, axis=0), fps=10) for rgb in rgbs]}, step=step)
             

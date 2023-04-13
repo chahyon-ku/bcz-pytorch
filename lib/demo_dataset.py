@@ -13,7 +13,7 @@ import torchvision.transforms as transforms
 
 
 class DemoDataset(torch.utils.data.Dataset):
-    def __init__(self, variations, demos_config, action_mode, task_embeds):
+    def __init__(self, variations, demos_config, action_mode, task_embeds, views):
         self.data = None
         self.action_mode = action_mode
         self.demos_config = demos_config
@@ -22,6 +22,7 @@ class DemoDataset(torch.utils.data.Dataset):
         print(self.len)
 
         self.task_embeds = task_embeds
+        self.views = views
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             # transforms.RandomResizedCrop(128),
@@ -35,10 +36,11 @@ class DemoDataset(torch.utils.data.Dataset):
             self.data = self._load_data()
             print('loaded data', len(self.data))
 
-        image, task_embed, xyz, axangle, gripper = self.data[index]
-        image = Image.open(image)
-        image = self.transform(image)
-        return image, task_embed, xyz, axangle, gripper
+        image_paths, task_embed, xyz, axangle, gripper = self.data[index]
+        # task_embed += np.random.normal(0, 0.1, task_embed.shape)
+        images = torch.stack([torch.stack([self.transform(Image.open(view)) for view in views]) for views in image_paths])
+        # O, V, C, H, W
+        return images, task_embed, xyz, axangle, gripper
     
     def _load_data(self) -> typing.List[typing.Tuple[torch.Tensor, torch.Tensor]]:
         # print(self.action_mode_config)
@@ -62,7 +64,9 @@ class DemoDataset(torch.utils.data.Dataset):
                     xyz_deltas.append(xyz_delta)
                     axangle_deltas.append(axangle_delta)
                     gripper_deltas.append(gripper_delta)
-                    images.append(demo[i_obs].front_rgb)#Image.open(demo[i_obs].front_rgb)
+                    images.append([[]])
+                    for view in self.views:
+                        images[-1][0].append(demo[i_obs].__dict__[view])#Image.open(demo[i_obs].front_rgb)
                 xyzs = np.stack(xyzs, axis=0).astype('float32')
                 axangles = np.stack(axangles, axis=0).astype('float32')
                 grippers = np.stack(grippers, axis=0).astype('float32')
@@ -102,8 +106,34 @@ class DemoDataset(torch.utils.data.Dataset):
 
             i_next += 1
             xyz_mag = np.linalg.norm(xyz_delta)
+            break
         return xyz_curr, axangle_curr, gripper, xyz_delta, axangle_delta, gripper_delta
             
+
+        # i_next = min(i_curr + 1, len(demo) - 1)
+        # xyz_mag = 0
+        # while i_next < len(demo) and xyz_mag < 0.01:
+        #     arm_next = demo[i_next].gripper_pose
+        #     xyz_next = arm_next[:3]
+        #     axangle_next = R.from_quat(arm_next[3:]).as_rotvec()
+        #     xyz_delta = xyz_next - xyz_curr
+
+        #     i_next += 1
+        #     xyz_mag = np.linalg.norm(xyz_delta)
+
+        # i_next = min(i_curr + 1, len(demo) - 1)
+        # axangle_mag = 0
+        # while i_next < len(demo) and axangle_mag < 0.01:
+        #     arm_next = demo[i_next].gripper_pose
+        #     xyz_next = arm_next[:3]
+        #     axangle_next = R.from_quat(arm_next[3:]).as_rotvec()
+        #     axangle_delta = axangle_next - axangle_curr
+
+        #     i_next += 1
+        #     axangle_mag = np.linalg.norm(axangle_delta)
+
+        # i_next = min(i_curr + 1, len(demo) - 1)
+        # gripper_delta = [demo[i_next].gripper_open]
 
 # def pose_to_T(pose):
 #     T = np.eye(4, dtype=np.float32)

@@ -4,33 +4,35 @@ import torch.nn.functional as F
 
 
 class MLPDecoder(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, input_dim, hidden_dim) -> None:
         super().__init__()
         self.xyz_branch = nn.Sequential(
-            nn.Linear(512, 256),
+            nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 30),
+            nn.Linear(hidden_dim, 30),
         )
         self.axangle_branch = nn.Sequential(
-            nn.Linear(512, 256),
+            nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 30),
+            nn.Linear(hidden_dim, 30),
         )
         self.gripper_branch = nn.Sequential(
-            nn.Linear(512, 256),
+            nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 10),
+            nn.Linear(hidden_dim, 10),
             nn.Sigmoid(),
         )
     
     def forward(self, image_embed):
         # image_embed: (batch_size, 512)
+        B, O, D = image_embed.shape
+        image_embed = image_embed.view(B, O * D)
         xyz = self.xyz_branch(image_embed)
         axangle = self.axangle_branch(image_embed)
         gripper = self.gripper_branch(image_embed)

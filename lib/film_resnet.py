@@ -33,10 +33,13 @@ class FilmBlock(torchvision.models.resnet.BasicBlock):
 
     def forward(self, x) -> torch.Tensor:
         x, gamma, beta = x
-        # identity = x
+        if self.downsample is not None:
+            identity = self.downsample(x)
+        else:
+            identity = x
 
         out = self.conv1(x)
-        # out = self.bn1(out)
+        out = self.bn1(out)
         out = self.relu(out)
         identity = out
 
@@ -44,10 +47,7 @@ class FilmBlock(torchvision.models.resnet.BasicBlock):
         out = self.bn2(out)
         gamma, new_gamma = gamma[:, :out.shape[1]], gamma[:, out.shape[1]:]
         beta, new_beta = beta[:, :out.shape[1]], beta[:, out.shape[1]:]
-        # out = gamma * out + beta
-
-        if self.downsample is not None:
-            identity = self.downsample(x)
+        out = gamma * out + beta
 
         out += identity
         out = self.relu(out)
@@ -62,6 +62,8 @@ class FilmResnet(torchvision.models.resnet.ResNet):
 
     def _forward_impl(self, x: torch.Tensor, task_embed: torch.Tensor) -> torch.Tensor:
         # See note [TorchScript super()]
+        B, O, C, H, W = x.shape
+        x = x.reshape(B * O, C, H, W)
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -74,8 +76,9 @@ class FilmResnet(torchvision.models.resnet.ResNet):
         x, _, _ = self.layer4((x, gamma[3], beta[3]))
 
         x = self.avgpool(x)
-        x = torch.flatten(x, 1)
+        # x = torch.flatten(x, 1)
         # x = self.fc(x)
+        x = x.reshape(B, O, -1)
 
         return x
     

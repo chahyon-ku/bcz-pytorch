@@ -11,44 +11,44 @@ environment:
   dataset_root: data
   obs_config:
     _target_: rlbench.observation_config.ObservationConfig
-    left_shoulder_camera:
-      _target_: rlbench.observation_config.CameraConfig
-      image_size:
-        - 256
-        - 256
-      rgb: True
-      depth: False
-      mask: False
-    right_shoulder_camera:
-      _target_: rlbench.observation_config.CameraConfig
-      image_size:
-        - 256
-        - 256
-      rgb: True
-      depth: False
-      mask: False
-    overhead_camera:
-      _target_: rlbench.observation_config.CameraConfig
-      image_size:
-        - 256
-        - 256
-      rgb: True
-      depth: False
-      mask: False
-    wrist_camera:
-      _target_: rlbench.observation_config.CameraConfig
-      image_size:
-        - 256
-        - 256
-      rgb: True
-      depth: False
-      mask: False
-    front_camera:
-      _target_: rlbench.observation_config.CameraConfig
-      image_size:
-        - 256
-        - 256
-      rgb: True
-      depth: False
-      mask: False
+    # left_shoulder_camera:
+    #   _target_: rlbench.observation_config.CameraConfig
+    #   image_size:
+    #     - 256
+    #     - 256
+    #   rgb: True
+    #   depth: False
+    #   mask: False
+    # right_shoulder_camera:
+    #   _target_: rlbench.observation_config.CameraConfig
+    #   image_size:
+    #     - 256
+    #     - 256
+    #   rgb: True
+    #   depth: False
+    #   mask: False
+    # overhead_camera:
+    #   _target_: rlbench.observation_config.CameraConfig
+    #   image_size:
+    #     - 256
+    #     - 256
+    #   rgb: True
+    #   depth: False
+    #   mask: False
+    # wrist_camera:
+    #   _target_: rlbench.observation_config.CameraConfig
+    #   image_size:
+    #     - 256
+    #     - 256
+    #   rgb: True
+    #   depth: False
+    #   mask: False
+    # front_camera:
+    #   _target_: rlbench.observation_config.CameraConfig
+    #   image_size:
+    #     - 256
+    #     - 256
+    #   rgb: True
+    #   depth: False
+    #   mask: False
   headless: True

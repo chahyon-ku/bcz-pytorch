@@ -24,6 +24,7 @@ os.environ['TOKENIZERS_PARALLELISM']='true'
 
 def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device, environment):
     model = model.to(device)
+    model.eval()
     task = environment.get_task(hydra.utils.get_class(task))
 
     success = 0

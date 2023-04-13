@@ -1,0 +1,1 @@
+task: rlbench.tasks.pick_and_lift.PickAndLift

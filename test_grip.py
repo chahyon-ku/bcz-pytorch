@@ -38,13 +38,39 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
         description = descriptions[0]
         task_embed = language_encoder.encode([description])[0]
         task_embed = torch.from_numpy(task_embed).to(device)
+        grippers = []
+        closed = False
         for j in range(n_steps_per_episode):
             rgbs[-1].append(obs.front_rgb.copy().transpose(2, 0, 1))
             # image = Image.fromarray(obs.front_rgb)
             # plt.imshow(image)
             # plt.show()
             action = model.get_action(obs, task_embed)
-            gripper = action[-1]
+            if action[-1] > 0.5:
+                action[-1] = 1
+            else:
+                action[-1] = 0
+            grippers.append(action[-1])
+            if grippers[-1] == 0:
+                closed = True
+            # once gripper closes, keep it closed for n steps
+            n = 10
+            if len(grippers) > n and closed and grippers[-n] == 1:
+                action[-1] = 0
+                grippers[-1] = 0
+
+            if grippers[-1] == 1:
+                closed = False
+                # set whole list to 1
+                for i in range(len(grippers)):
+                    grippers[i] = 1
+
+            # # if previous 3 grippers are the same, allow change
+            # if len(grippers) > 4 and grippers[-2] == grippers[-3] == grippers[-4]:
+            #     pass
+            # elif len(grippers) > 1:
+            #     action[-1] = grippers[-2]
+            #     grippers[-1] = grippers[-2]
             # print(action)
             # print(gripper)
             try:

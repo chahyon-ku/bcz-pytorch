@@ -21,7 +21,7 @@ from hydra.core.hydra_config import HydraConfig
 os.environ['TOKENIZERS_PARALLELISM']='true'
 
 
-@hydra.main(version_base=None, config_path='./configs/train/single_task', config_name='reach_target_stereo')
+@hydra.main(version_base=None, config_path='./configs/train/single_task', config_name='knock_eraser')
 def main(cfg: DictConfig) -> None:
     output_dir = HydraConfig.get().run.dir
     input(cfg)
@@ -78,11 +78,13 @@ def main(cfg: DictConfig) -> None:
         image = image.to(cfg.train.device)
         image2 = image2.to(cfg.train.device)
         action = xyz.to(cfg.train.device)
-        # if step <= 1:
-        #     print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
-        #     plt.imshow(image2[0].permute(1, 2, 0).cpu().numpy())
-        #     plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
-        #     plt.show()
+        if step <= 1:
+            plt.imshow(image[0].permute(1, 2, 0).cpu().numpy())
+            plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
+            plt.show()
+            plt.imshow(image2[0].permute(1, 2, 0).cpu().numpy())
+            plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
+            plt.show()
         task_embed = task_embed.to(cfg.train.device)
         optimizer.zero_grad()
         pred_action = model.forward(image, image2)
@@ -91,9 +93,9 @@ def main(cfg: DictConfig) -> None:
         # scale action y z by 10
         action_scale = 40
         loss = loss_fn(pred_action, action_scale*action[:, 0, :])*100
-        if step % 100 == 0:
-            print('pred_action', pred_action[0].detach().cpu().numpy())
-            print('action', action_scale*action[0, 0, :].detach().cpu().numpy())
+        # if step % 100 == 0:
+        #     print('pred_action', pred_action[0].detach().cpu().numpy())
+        #     print('action', action_scale*action[0, 0, :].detach().cpu().numpy())
             
         loss.backward()
         optimizer.step()
@@ -106,7 +108,8 @@ def main(cfg: DictConfig) -> None:
         #         wandb.log({'train/loss/%s' % k: np.mean(v)}, step=step)
         #     train_losses = {}
 
-        wandb.log({'train/loss/':loss.item()}, step=step)
+        if step % cfg.train.log_interval == 0:
+            wandb.log({'train/loss/':loss.item()}, step=step)
 
         if step % cfg.train.eval_interval == 0:
             success_rate, rgbs = hydra.utils.instantiate(cfg.test, model=model, language_encoder=language_encoder, environment=environment)

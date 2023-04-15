@@ -51,8 +51,10 @@ class BC(nn.Module):
         # obs: rlbench.observation.Observation
         # task_embed: (512,)
         device = 'cuda:1'
-        image = TF.to_tensor(Image.fromarray(obs.front_rgb)).unsqueeze(0).to(device)
-        image2 = TF.to_tensor(Image.fromarray(obs.left_shoulder_rgb)).unsqueeze(0).to(device)
+        # image = TF.to_tensor(Image.fromarray(obs.front_rgb)).unsqueeze(0).to(device)
+        # image2 = TF.to_tensor(Image.fromarray(obs.left_shoulder_rgb)).unsqueeze(0).to(device)
+        image = TF.to_tensor(Image.fromarray(obs.left_shoulder_rgb)).unsqueeze(0).to(device)
+        image2 = TF.to_tensor(Image.fromarray(obs.right_shoulder_rgb)).unsqueeze(0).to(device)
         xyz = self.forward(image, image2)
         
         # show this image
@@ -78,7 +80,7 @@ class BC(nn.Module):
         # axangle = curr_axangle
         # quat = R.from_rotvec(axangle).as_quat()
         
-        action = np.concatenate([curr_xyz, curr_quat, [0]])
+        action = np.concatenate([curr_xyz, curr_quat, [1]])
 
         return action
 

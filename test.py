@@ -44,9 +44,6 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
             # plt.imshow(image)
             # plt.show()
             action = model.get_action(obs, task_embed)
-            gripper = action[-1]
-            # print(action)
-            # print(gripper)
             try:
                 obs, reward, terminate = task.step(action)
             except rlbench.backend.exceptions.InvalidActionError:
@@ -56,6 +53,15 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
                 if reward == 1:
                     print('Success')
                     success += 1
+                # do 10 more steps then break
+                for k in range(10):
+                    rgbs[-1].append(obs.front_rgb.copy().transpose(2, 0, 1))
+                    action = model.get_action(obs, task_embed)
+                    try:
+                        obs, reward, terminate = task.step(action)
+                    except rlbench.backend.exceptions.InvalidActionError:
+                        print('Invalid action')
+                        break
                 break
 
     # environment.shutdown()

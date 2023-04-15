@@ -8,3 +8,4 @@ __pycache__
 /train
 /data*
 /models
+*.FCStd1

@@ -41,7 +41,6 @@ class FilmBlock(torchvision.models.resnet.BasicBlock):
         out = self.conv1(x)
         out = self.bn1(out)
         out = self.relu(out)
-        identity = out
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -56,8 +55,11 @@ class FilmBlock(torchvision.models.resnet.BasicBlock):
 
 
 class FilmResnet(torchvision.models.resnet.ResNet):
-    def __init__(self, task_embed_dim, **kwargs) -> None:
+    def __init__(self, in_channel, task_embed_dim, **kwargs) -> None:
         super(FilmResnet, self).__init__(**kwargs)
+        # RGB vs RGB-D
+        self.conv1 = nn.Conv2d(in_channel, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        nn.init.kaiming_normal_(self.conv1.weight, mode="fan_out", nonlinearity="relu")
         self.film_generator = FilmGenerator(task_embed_dim)
 
     def _forward_impl(self, x: torch.Tensor, task_embed: torch.Tensor) -> torch.Tensor:
@@ -86,15 +88,18 @@ class FilmResnet(torchvision.models.resnet.ResNet):
         return self._forward_impl(x, task_embed)
 
 
-def film_resnet18(task_embed_dim):
+def film_resnet18(in_channels, task_embed_dim):
     return FilmResnet(
+        in_channel=in_channels,
         task_embed_dim=task_embed_dim,
         block=FilmBlock,
         layers=[2, 2, 2, 2],
     )
 
-def film_resnet34(task_embed_dim):
+
+def film_resnet34(in_channels, task_embed_dim):
     return FilmResnet(
+        in_channel=in_channels,
         task_embed_dim=task_embed_dim,
         block=FilmBlock,
         layers=[3, 4, 6, 3],

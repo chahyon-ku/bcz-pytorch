@@ -26,9 +26,9 @@ from absl import flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('save_path',
-                    '/home/rpm/Class/CSCI5890-DEEPROB/bc-z/bcz-pytorch/data',
+                    '/home/rpm/Class/CSCI5890-DEEPROB/bc-z/bcz-pytorch/data_1000',
                     'Where to save the demos.')
-flags.DEFINE_list('tasks', ['pick_up_cup', 'reach_target'],
+flags.DEFINE_list('tasks', ['open_jar', 'place_shape_in_shape_sorter'],
                   'The tasks to collect. If empty, all tasks are collected.')
 flags.DEFINE_list('image_size', [128, 128],
                   'The size of the images tp save.')

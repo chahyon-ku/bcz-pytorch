@@ -1,8 +1,10 @@
 import os
 import pickle
+from matplotlib import pyplot as plt
 import torch
 import torch.utils.data
-import rlbench.utils
+import rlbench.backend.utils
+import rlbench.backend.const
 import hydra
 import typing
 import rlbench.action_modes.arm_action_modes
@@ -13,21 +15,17 @@ import torchvision.transforms as transforms
 
 
 class DemoDataset(torch.utils.data.Dataset):
-    def __init__(self, variations, demos_config, action_mode, task_embeds, views):
+    def __init__(self, variations, demos_config, action_mode, task_embeds, views, action_scale):
         self.data = None
         self.action_mode = action_mode
         self.demos_config = demos_config
         self.variations = variations
         self.len = sum([sum([len(demo) for demo in rlbench.utils.get_stored_demos(**demos_config, variation_number=variation)]) for variation in variations])
+        self.action_scale = action_scale
         print(self.len)
 
         self.task_embeds = task_embeds
         self.views = views
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-            # transforms.RandomResizedCrop(128),
-            # transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
-        ])
     def __len__(self) -> int:
         return self.len
 
@@ -36,10 +34,18 @@ class DemoDataset(torch.utils.data.Dataset):
             self.data = self._load_data()
             print('loaded data', len(self.data))
 
-        image_paths, task_embed, xyz, axangle, gripper = self.data[index]
+        images, task_embed, xyz, axangle, gripper = self.data[index]
         # task_embed += np.random.normal(0, 0.1, task_embed.shape)
-        images = torch.stack([torch.stack([self.transform(Image.open(view)) for view in views]) for views in image_paths])
-        # O, V, C, H, W
+        images = {view: [Image.open(frame) for frame in frames] for view, frames in images.items()}
+        images = {view: ([rlbench.backend.utils.image_to_float_array(frame, rlbench.backend.const.DEPTH_SCALE)[None, ...].astype(np.float32) for frame in frames]
+                         if 'depth' in view else
+                         [np.array(frame.convert('RGB')).transpose(2, 0, 1).astype(np.float32) / 255.0 for frame in frames])
+                         for view, frames in images.items()}
+        images = {view: np.stack(frames, axis=0) for view, frames in images.items()}
+        # for view in self.views:
+        #     plt.imshow(images[view][0].transpose(1, 2, 0))
+        #     plt.show()
+        # V: [O, C, H, W]
         return images, task_embed, xyz, axangle, gripper
     
     def _load_data(self) -> typing.List[typing.Tuple[torch.Tensor, torch.Tensor]]:
@@ -49,7 +55,7 @@ class DemoDataset(torch.utils.data.Dataset):
         for variation in self.variations:
             demos = rlbench.utils.get_stored_demos(variation_number=variation, **self.demos_config)
             for i_demo, demo in enumerate(demos):
-                images = []
+                images = {view: [[]] for view in self.views}
                 xyzs = []
                 axangles = []
                 grippers = []
@@ -64,9 +70,8 @@ class DemoDataset(torch.utils.data.Dataset):
                     xyz_deltas.append(xyz_delta)
                     axangle_deltas.append(axangle_delta)
                     gripper_deltas.append(gripper_delta)
-                    images.append([[]])
                     for view in self.views:
-                        images[-1][0].append(demo[i_obs].__dict__[view])#Image.open(demo[i_obs].front_rgb)
+                        images[view][0].append(demo[i_obs].__dict__[view])#Image.open(demo[i_obs].front_rgb)
                 xyzs = np.stack(xyzs, axis=0).astype('float32')
                 axangles = np.stack(axangles, axis=0).astype('float32')
                 grippers = np.stack(grippers, axis=0).astype('float32')
@@ -82,7 +87,11 @@ class DemoDataset(torch.utils.data.Dataset):
                     this_axangles = axangle_deltas[curr_act_indices] + axangles[curr_act_indices] - axangles[i_obs]
                     this_grippers = gripper_deltas[curr_act_indices]
 
-                    data.append((images[i_obs], self.task_embeds['reach_target'][variation],
+                    this_xyzs = this_xyzs * self.action_scale[0]
+                    this_axangles = this_axangles * self.action_scale[1]
+
+                    this_images = {view: [images[view][0][i_obs]] for view in self.views}
+                    data.append((this_images, self.task_embeds['reach_target'][variation],
                                  this_xyzs, this_axangles, this_grippers))
         return data
     
@@ -106,6 +115,7 @@ class DemoDataset(torch.utils.data.Dataset):
 
             i_next += 1
             xyz_mag = np.linalg.norm(xyz_delta)
+            # print(i_next - i_curr, xyz_mag)
             break
         return xyz_curr, axangle_curr, gripper, xyz_delta, axangle_delta, gripper_delta
             

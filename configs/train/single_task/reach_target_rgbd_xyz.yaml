@@ -1,6 +1,6 @@
 hydra:
   run:
-    dir: ./train/train-reach_target_wrist-${now:%Y.%m.%d-%H.%M.%S}
+    dir: ./train/train-${hydra:job.config_name}-${now:%Y.%m.%d-%H.%M.%S}
 
 defaults:
   - ../../envs/base.yaml@_global_
@@ -26,7 +26,7 @@ train_dataset:
       absolute_mode: False
     gripper_action_mode:
       _target_: rlbench.action_modes.gripper_action_modes.Discrete
-  views: [front_rgb, wrist_rgb]
+  views: [front_rgb, front_depth]
 
 train_dataloader:
   _target_: torch.utils.data.DataLoader
@@ -42,15 +42,12 @@ model:
     modules:
       - _target_: lib.film_resnet.film_resnet18
         task_embed_dim: 768
-      - _target_: lib.film_resnet.film_resnet18
-        task_embed_dim: 768
+        in_channels: 4
   policy_decoder:
     _target_: lib.mlp_decoder.MLPDecoder
-    input_dim: 1024
+    input_dim: 512
     hidden_dim: 256
-  views:
-    - front_rgb
-    - wrist_rgb
+  views: [front_rgb, front_depth]
 
 optimizer:
   _target_: torch.optim.Adam
@@ -62,11 +59,13 @@ train:
   eval_interval: 2000
   save_interval: 2000
   device: cuda:1
+  weights: [100, 0, 0]
 
 test:
   _target_: test.test
   n_episodes: 10
   n_steps_per_episode: 100
+  variations: [0]
 environment:
   headless: True
 

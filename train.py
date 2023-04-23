@@ -24,7 +24,7 @@ os.environ['TOKENIZERS_PARALLELISM']='true'
 @hydra.main(version_base=None, config_path='./configs/train/single_task', config_name='reach_target')
 def main(cfg: DictConfig) -> None:
     output_dir = HydraConfig.get().run.dir
-    input(cfg)
+    # input(cfg)
 
     logging.getLogger('sentence_transformers.SentenceTransformer').setLevel(logging.ERROR)
     task_embeds = {'reach_target': []}
@@ -60,23 +60,23 @@ def main(cfg: DictConfig) -> None:
     best_val_loss = float('inf')
     for step in step_tqdm:
         try:
-            image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            images, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
         except StopIteration:
             train_dataloader_iter = iter(train_dataloader)
-            image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            images, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
         model.train()
-        image = image.to(cfg.train.device)
-        if step == 1:
-            print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
-            plt.imshow(image[0, 0, 0].permute(1, 2, 0).cpu().numpy())
-            plt.show()
+        images = {view: frames.to(cfg.train.device) for view, frames in images.items()}
         task_embed = task_embed.to(cfg.train.device)
         action = xyz.to(cfg.train.device), axangle.to(cfg.train.device), gripper.to(cfg.train.device)
+
+        # if step == 1:
+        #     print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
+        #     plt.imshow(images[list(images.keys())[0]][0, 0].permute(1, 2, 0).cpu().numpy())
+        #     plt.show()
+
         optimizer.zero_grad()
-        pred_action = model.forward(image, task_embed)
-        # input(pred_action[1].shape)
-        # input(action[1].shape)
-        loss = model.loss(pred_action, action)
+        pred_action = model.forward(images, task_embed)
+        loss = model.loss(pred_action, action, cfg.train.weights)
         loss['loss'].backward()
         optimizer.step()
 
@@ -90,6 +90,7 @@ def main(cfg: DictConfig) -> None:
 
         if step % cfg.train.eval_interval == 0:
             success_rate, rgbs = hydra.utils.instantiate(cfg.test, model=model, language_encoder=language_encoder, environment=environment, device=cfg.train.device)
+            rgbs = rgbs[:10]
             wandb.log({'test/success_rate': success_rate}, step=step)
             wandb.log({'test/rgb': [wandb.Video(np.stack(rgb, axis=0), fps=10) for rgb in rgbs]}, step=step)
             

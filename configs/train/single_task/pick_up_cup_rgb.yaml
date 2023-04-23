@@ -4,7 +4,7 @@ hydra:
 
 defaults:
   - ../../envs/base.yaml@_global_
-  - ../../tasks/reach_target.yaml@_global_/test
+  - ../../tasks/pick_up_cup.yaml@_global_/test
   - _self_
 
 train_dataset:
@@ -14,7 +14,7 @@ train_dataset:
     amount: 200
     image_paths: True
     dataset_root: data
-    task_name: reach_target
+    task_name: pick_up_cup
     obs_config:
       _target_: rlbench.observation_config.ObservationConfig
     random_selection: False
@@ -26,8 +26,7 @@ train_dataset:
       absolute_mode: False
     gripper_action_mode:
       _target_: rlbench.action_modes.gripper_action_modes.Discrete
-  views:
-    - front_rgb
+  views: [front_rgb]
 
 train_dataloader:
   _target_: torch.utils.data.DataLoader
@@ -43,31 +42,34 @@ model:
     modules:
       - _target_: lib.film_resnet.film_resnet18
         task_embed_dim: 768
+        in_channels: 3
   policy_decoder:
     _target_: lib.mlp_decoder.MLPDecoder
     input_dim: 512
     hidden_dim: 256
-  views:
-    - front_rgb
+  views: [front_rgb]
+  task_embed_std: 0
 
 optimizer:
   _target_: torch.optim.Adam
-  lr: 5e-3
+  lr: 1e-4
 
 train:
   n_steps: 100000
   log_interval: 10
-  eval_interval: 2000
-  save_interval: 2000
+  eval_interval: 10000
+  save_interval: 10000
   device: cuda:1
+  weights: [100, 10, 0.5]
 
 test:
   _target_: test.test
-  n_episodes: 10
+  n_episodes: 100
   n_steps_per_episode: 100
+  variations: [0]
 environment:
   headless: True
 
 wandb:
   project: bcz-pytorch
-  tags: [reach_target, single_task, train]
+  tags: [pick_up_cup, single_task, train]

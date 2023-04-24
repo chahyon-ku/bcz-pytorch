@@ -20,7 +20,7 @@ environment:
   headless: True
 
 train_dataset:
-  _target_: lib.demo_dataset_stereo.DemoDataset
+  _target_: lib.demo_dataset_lr.DemoDataset
   variations: [0]
   demos_config:
     amount: 16

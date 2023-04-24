@@ -23,7 +23,7 @@ train_dataset:
   _target_: lib.demo_dataset_stereo.DemoDataset
   variations: [0]
   demos_config:
-    amount: 256
+    amount: 128
     image_paths: True
     dataset_root: data_pick_lemon
     task_name: pick_lemon
@@ -57,15 +57,15 @@ optimizer:
 train:
   n_steps: 15000
   log_interval: 50
-  eval_interval: 500
-  save_interval: 500
-  device: cuda:1
+  eval_interval: 2000
+  save_interval: 2000
+  device: cuda:0
 
 test:
   _target_: test_grip.test
   n_episodes: 4
   n_steps_per_episode: 150
-  device: cuda:1
+  device: cuda:0
   task: rlbench.tasks.pick_lemon.PickLemon
 
 wandb:

@@ -59,35 +59,36 @@ def main(cfg: DictConfig) -> None:
     train_losses = {}
     for step in step_tqdm:
         model.train()
-        if step == 6000:
+        if step == 3000:
             for g in optimizer.param_groups:
                 g['lr'] = 1e-4
-        if step == 9000:
+        if step == 5000:
             for g in optimizer.param_groups:
                 g['lr'] = 5e-5
         try:
-            image, image2, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            image, image2, task_embed, xyz, axangle, gripper, curr_gripper = next(train_dataloader_iter)
         except StopIteration:
             print('restarting train dataloader')
             train_dataloader_iter = iter(train_dataloader)
-            image, image2, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            image, image2, task_embed, xyz, axangle, gripper, curr_gripper = next(train_dataloader_iter)
         model.train()
         image = image.to(cfg.train.device)
         image2 = image2.to(cfg.train.device)
         action = xyz.to(cfg.train.device)
         gripper = gripper.to(cfg.train.device)
-        # if step <= 100:
-        #     print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
-        #     plt.imshow(image[0].permute(1, 2, 0).cpu().numpy())
-        #     # plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
-        #     plt.title('gripper' + str(gripper[0].cpu().numpy().T))
-        #     plt.show()
+        curr_gripper = curr_gripper.to(cfg.train.device)
+        if step <= 10:
+            # print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
+            plt.imshow(image[0].permute(1, 2, 0).cpu().numpy())
+            # plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
+            plt.title('curr_gripper' + str(curr_gripper[0].cpu().numpy()))
+            plt.show()
         optimizer.zero_grad()
-        pred_action, pred_gripper = model.forward(image, image2)
+        pred_action, pred_gripper = model.forward(image, image2, curr_gripper)
 
         # scale action to improve training
         action_scale = 40
-        truth = action_scale*action[:, 0, :], gripper[:, 0]
+        truth = action_scale*action, gripper.squeeze(-1)
         prediction = pred_action, pred_gripper
         loss = model.loss(prediction, truth)
             

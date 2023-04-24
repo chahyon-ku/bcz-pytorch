@@ -35,12 +35,12 @@ class DemoDataset(torch.utils.data.Dataset):
             self.data = self._load_data()
             print('loaded data', len(self.data))
 
-        image1, image2, task_embed, xyz, axangle, gripper, curr_gripper = self.data[index]
+        image1, image2, task_embed, xyz, axangle, gripper = self.data[index]
         image1 = Image.open(image1)
         image1 = self.transform(image1)
         image2 = Image.open(image2)
         image2 = self.transform(image2)
-        return image1, image2, task_embed, xyz, axangle, gripper, curr_gripper
+        return image1, image2, task_embed, xyz, axangle, gripper
     
     def _load_data(self) -> typing.List[typing.Tuple[torch.Tensor, torch.Tensor]]:
         # print(self.action_mode_config)
@@ -65,10 +65,10 @@ class DemoDataset(torch.utils.data.Dataset):
                     xyz_deltas.append(xyz_delta)
                     axangle_deltas.append(axangle_delta)
                     gripper_deltas.append(gripper_delta)
-                    images.append(demo[i_obs].front_rgb)
-                    images2.append(demo[i_obs].left_shoulder_rgb)
-                    # images.append(demo[i_obs].left_shoulder_rgb)
-                    # images2.append(demo[i_obs].right_shoulder_rgb)
+                    # images.append(demo[i_obs].front_rgb)
+                    # images2.append(demo[i_obs].left_shoulder_rgb)
+                    images.append(demo[i_obs].left_shoulder_rgb)
+                    images2.append(demo[i_obs].right_shoulder_rgb)
                 xyzs = np.stack(xyzs, axis=0).astype('float32')
                 axangles = np.stack(axangles, axis=0).astype('float32')
                 grippers = np.stack(grippers, axis=0).astype('float32')
@@ -83,10 +83,9 @@ class DemoDataset(torch.utils.data.Dataset):
                     this_xyzs = xyz_deltas[curr_act_indices] + xyzs[curr_act_indices] - xyzs[i_obs]
                     this_axangles = axangle_deltas[curr_act_indices] + axangles[curr_act_indices] - axangles[i_obs]
                     this_grippers = gripper_deltas[curr_act_indices]
-                    curr_gripper = grippers[i_obs]
 
                     data.append((images[i_obs], images2[i_obs], self.task_embeds['reach_target'][variation],
-                                 this_xyzs, this_axangles, this_grippers, curr_gripper))
+                                 this_xyzs, this_axangles, this_grippers))
         return data
     
     def _get_state_delta(self, demo, i_curr):

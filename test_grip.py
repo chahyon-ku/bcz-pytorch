@@ -46,31 +46,31 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
             # plt.imshow(image)
             # plt.show()
             action = model.get_action(obs, task_embed)
-            if action[-1] > 0.5:
-                action[-1] = 1
-            else:
-                action[-1] = 0
-            grippers.append(action[-1])
-            if grippers[-1] == 0:
-                closed = True
-            # once gripper closes, keep it closed for n steps
-            n = 10
-            if len(grippers) > n and closed and grippers[-n] == 1:
-                action[-1] = 0
-                grippers[-1] = 0
+            # if action[-1] > 0.5:
+            #     action[-1] = 1
+            # else:
+            #     action[-1] = 0
+            # grippers.append(action[-1])
+            # if grippers[-1] == 0:
+            #     closed = True
+            # # once gripper closes, keep it closed for n steps
+            # n = 10
+            # if len(grippers) > n and closed and grippers[-n] == 1:
+            #     action[-1] = 0
+            #     grippers[-1] = 0
 
-            if grippers[-1] == 1:
-                closed = False
-                # set whole list to 1
-                for i in range(len(grippers)):
-                    grippers[i] = 1
+            # if grippers[-1] == 1:
+            #     closed = False
+            #     # set whole list to 1
+            #     for i in range(len(grippers)):
+            #         grippers[i] = 1
             
-            # at certain steps, close gripper
-            if j > 70 and j < 120:
-                action[-1] = 0
-            # at certain steps, open gripper
-            if j > 140:
-                action[-1] = 1
+            # # at certain steps, close gripper
+            # if j > 70 and j < 120:
+            #     action[-1] = 0
+            # # at certain steps, open gripper
+            # if j > 140:
+            #     action[-1] = 1
 
             # # if previous 3 grippers are the same, allow change
             # if len(grippers) > 4 and grippers[-2] == grippers[-3] == grippers[-4]:

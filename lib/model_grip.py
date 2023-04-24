@@ -69,6 +69,7 @@ class BC(nn.Module):
         device = 'cuda:0'
         image = TF.to_tensor(Image.fromarray(obs.front_rgb)).unsqueeze(0).to(device)
         image2 = TF.to_tensor(Image.fromarray(obs.left_shoulder_rgb)).unsqueeze(0).to(device)
+        # image2 = TF.to_tensor(Image.fromarray(obs.wrist_rgb)).unsqueeze(0).to(device)
         curr_gripper = torch.tensor([obs.gripper_open]).unsqueeze(0).to(device)
         xyz, gripper = self.forward(image, image2, curr_gripper)
         
@@ -80,9 +81,11 @@ class BC(nn.Module):
 
         # xyz: (batch_size, 10, 3)
         # axangle: (batch_size, 10, 4)
+        print('z', xyz[0, :, 2].detach().cpu().numpy().round(2))
         xyz = xyz.detach().cpu().numpy()[0, 0]
         # axangle = axangle.detach().cpu().numpy()[0, 0]
-        gripper = gripper.detach().cpu().numpy()[0, 0]
+        print('gripper', torch.round(gripper).detach().cpu().numpy())
+        gripper = gripper.detach().cpu().numpy()[0, 2]
 
         curr_xyz = obs.gripper_pose[:3]
         curr_quat = obs.gripper_pose[3:]

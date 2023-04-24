@@ -67,6 +67,7 @@ class DemoDataset(torch.utils.data.Dataset):
                     gripper_deltas.append(gripper_delta)
                     images.append(demo[i_obs].front_rgb)
                     images2.append(demo[i_obs].left_shoulder_rgb)
+                    # images2.append(demo[i_obs].wrist_rgb)
                     # images.append(demo[i_obs].left_shoulder_rgb)
                     # images2.append(demo[i_obs].right_shoulder_rgb)
                 xyzs = np.stack(xyzs, axis=0).astype('float32')

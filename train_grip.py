@@ -77,12 +77,12 @@ def main(cfg: DictConfig) -> None:
         action = xyz.to(cfg.train.device)
         gripper = gripper.to(cfg.train.device)
         curr_gripper = curr_gripper.to(cfg.train.device)
-        if step <= 10:
-            # print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
-            plt.imshow(image[0].permute(1, 2, 0).cpu().numpy())
-            # plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
-            plt.title('curr_gripper' + str(curr_gripper[0].cpu().numpy()))
-            plt.show()
+        # if step <= 10:
+        #     # print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
+        #     plt.imshow(image[0].permute(1, 2, 0).cpu().numpy())
+        #     # plt.title('xyz' + str(action[0, 0, :].cpu().numpy()))
+        #     plt.title('curr_gripper' + str(curr_gripper[0].cpu().numpy()))
+        #     plt.show()
         optimizer.zero_grad()
         pred_action, pred_gripper = model.forward(image, image2, curr_gripper)
 
@@ -91,6 +91,11 @@ def main(cfg: DictConfig) -> None:
         truth = action_scale*action, gripper.squeeze(-1)
         prediction = pred_action, pred_gripper
         loss = model.loss(prediction, truth)
+
+        # print gripper every 100 steps
+        # if step % 100 == 0:
+        #     pred_truth = torch.round(torch.cat([pred_gripper.unsqueeze(-1), gripper], dim=-1))
+        #     print(' train gripper pred, truth\n', pred_truth[0].detach().cpu().numpy())
             
         loss['total_loss'].backward()
         optimizer.step()

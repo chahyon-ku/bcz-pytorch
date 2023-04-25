@@ -18,7 +18,7 @@ import logging
 import wandb
 import matplotlib.pyplot as plt
 from hydra.core.hydra_config import HydraConfig
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont, ImageColor
 os.environ['TOKENIZERS_PARALLELISM']='true'
 import clip
 
@@ -30,7 +30,7 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
     rgbs = []
     for i_episode in range(n_episodes):
         rgbs.append([])
-        task.set_variation(i_episode % 7)
+        task.set_variation(i_episode % 4)
         # task.set_variation(7)
 
         descriptions, obs = task.reset()
@@ -67,14 +67,23 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
                     except rlbench.backend.exceptions.InvalidActionError:
                         break
                 break
-        # if it was success, append green image
+        # if it was success, append green image, else red
         if reward == 1:
-            green_im = np.ones((3, 128, 128))
-            green_im[1] *= 255
-            # cast to uint8
-            green_im = green_im.astype(np.uint8)
-            for _ in range(10):
-                rgbs[-1].append(green_im)
+            # create green image using PIL
+            im = Image.new('RGB', (128, 128), color='green')
+        else:
+            # create red image using PIL
+            im = Image.new('RGB', (128, 128), color='red')
+        # draw text on image
+        draw = ImageDraw.Draw(im)
+        font = ImageFont.truetype('arial.ttf', 20)
+        draw.text((10, 10), description, font=font, fill='black')
+        # cast to np array uint8
+        im = np.array(im)
+        # cast to uint8
+        im = im.astype(np.uint8)
+        for _ in range(10):
+            rgbs[-1].append(im)
         print('success rate: ', success / (i_episode + 1), i_episode + 1)
     print('final success rate: ', success / n_episodes)
     # environment.shutdown()

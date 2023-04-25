@@ -104,7 +104,7 @@ class DemoDataset(torch.utils.data.Dataset):
             xyz_next = arm_next[:3]
             axangle_next = R.from_quat(arm_next[3:]).as_rotvec()
             xyz_delta = xyz_next - xyz_curr
-            if xyz_mag == 0:
+            if True:
                 axangle_delta = axangle_next - axangle_curr
                 gripper_delta = [demo[i_next].gripper_open]
 

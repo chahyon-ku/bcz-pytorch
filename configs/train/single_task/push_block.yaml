@@ -1,6 +1,6 @@
 hydra:
   run:
-    dir: ./train/train-pick_lemon-${now:%Y.%m.%d-%H.%M.%S}
+    dir: ./train/train-push_block-${now:%Y.%m.%d-%H.%M.%S}
 
 defaults:
   - _self_
@@ -21,12 +21,12 @@ environment:
 
 train_dataset:
   _target_: lib.demo_dataset_stereo.DemoDataset
-  variations: [0]
+  variations: [0, 1, 2, 3, 4, 5, 6]
   demos_config:
-    amount: 128
+    amount: 64
     image_paths: True
-    dataset_root: data_pick_lemon
-    task_name: pick_lemon
+    dataset_root: data_push_block
+    task_name: push_block
     obs_config:
       _target_: rlbench.observation_config.ObservationConfig
     random_selection: False
@@ -47,7 +47,7 @@ train_dataloader:
   persistent_workers: True
 
 model:
-  _target_: lib.model_grip.BC
+  _target_: lib.model_lang_stereo.BC
   freeze: False
 
 optimizer:
@@ -55,19 +55,19 @@ optimizer:
   lr: 1e-3
 
 train:
-  n_steps: 10000
+  n_steps: 15000
   log_interval: 50
   eval_interval: 500
   save_interval: 500
-  device: cuda:0
+  device: cuda:1
 
 test:
-  _target_: test_grip.test
+  _target_: test_lang_stereo.test
   n_episodes: 20
-  n_steps_per_episode: 150
-  device: cuda:0
-  task: rlbench.tasks.pick_lemon.PickLemon
+  n_steps_per_episode: 100
+  device: cuda:1
+  task: rlbench.tasks.push_block.PushBlock
 
 wandb:
   project: bcz-pytorch
-  tags: [pick_lemon, single_task, train]
+  tags: [push_block, single_task, train]

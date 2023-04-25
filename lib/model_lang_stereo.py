@@ -12,26 +12,33 @@ class BC(nn.Module):
 
         # get pretrained resnet18 model
         self.resnet = models.resnet18(weights = models.ResNet18_Weights.DEFAULT)
+        self.resnet2 = models.resnet18(weights = models.ResNet18_Weights.DEFAULT)
         # get new model that stops at avgpool layer
         self.resnet = torch.nn.Sequential(*list(self.resnet.children())[:-1])
+        self.resnet2 = torch.nn.Sequential(*list(self.resnet2.children())[:-1])
         # freeze resnet layers
         if freeze:
             for param in self.resnet.parameters():
                 param.requires_grad = False
+            for param in self.resnet2.parameters():
+                param.requires_grad = False
 
         # create new layers
-        self.fc1 = nn.Linear(1024, 256)
+        self.fc1 = nn.Linear(1024 + 512, 256)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(256, 256)
-        self.fc3 = nn.Linear(256, 2)
+        self.fc3 = nn.Linear(256, 3)
 
-    def forward(self, x, text):
-        # pass through resnet
+    def forward(self, x, y, text):
+        # pass x through resnet
         x = self.resnet(x)
+        # pass y through resnet2
+        y = self.resnet2(y)
         # flatten
         x = x.view(x.size(0), -1)
-        # concatenate with text
-        x = torch.cat((x, text), 1)
+        y = y.view(y.size(0), -1)
+        # concatenate
+        x = torch.cat((x, y, text), 1)
         # pass through new layers
         x = self.fc1(x)
         x = self.relu(x)
@@ -40,12 +47,13 @@ class BC(nn.Module):
         x = self.fc3(x)
         return x
     
-    def get_action(self, obs, task_embed):
+    def get_action(self, obs, task_embed, zero=False):
         # obs: rlbench.observation.Observation
         # task_embed: (512,)
         device = 'cuda:1'
         image = TF.to_tensor(Image.fromarray(obs.front_rgb)).unsqueeze(0).to(device)
-        yz = self.forward(image, task_embed)
+        image2 = TF.to_tensor(Image.fromarray(obs.left_shoulder_rgb)).unsqueeze(0).to(device)
+        xyz = self.forward(image, image2, task_embed)
         
         # show this image
         # image = image.detach().cpu().numpy()[0]
@@ -56,7 +64,7 @@ class BC(nn.Module):
         # xyz: (batch_size, 10, 3)
         # axangle: (batch_size, 10, 4)
         # gripper: (batch_size, 10, 1)
-        yz = yz.detach().cpu().numpy()[0]
+        xyz = xyz.detach().cpu().numpy()[0]
         # axangle = axangle.detach().cpu().numpy()[0, 0]
         # gripper = gripper.detach().cpu().numpy()[0, 0]
         curr_xyz = obs.gripper_pose[:3]
@@ -65,12 +73,15 @@ class BC(nn.Module):
         # xyz = curr_xyz + xyz
         # print('yz prediction: ', yz)
         # print('yz shape', yz.shape)
-        curr_xyz[1:] += yz/20
+        if zero:
+            curr_xyz += xyz/400
+        else:
+            curr_xyz += xyz/40
         # axangle = curr_axangle + axangle
         # axangle = curr_axangle
         # quat = R.from_rotvec(axangle).as_quat()
         
-        action = np.concatenate([curr_xyz, curr_quat, [1]])
+        action = np.concatenate([curr_xyz, curr_quat, [0]])
 
         return action
 

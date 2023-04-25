@@ -1,11 +1,11 @@
 import time
 from matplotlib import pyplot as plt
-import rlbench.utils
-import rlbench.action_modes.action_mode
-import rlbench.action_modes.arm_action_modes
-import rlbench.action_modes.gripper_action_modes
-import rlbench.observation_config
-import rlbench.tasks.reach_target
+# import rlbench.utils
+# import rlbench.action_modes.action_mode
+# import rlbench.action_modes.arm_action_modes
+# import rlbench.action_modes.gripper_action_modes
+# import rlbench.observation_config
+# import rlbench.tasks.reach_target
 import numpy as np
 import hydra
 from omegaconf import DictConfig, OmegaConf
@@ -35,13 +35,18 @@ def main(cfg: DictConfig) -> None:
     text = []
     text.append('push the magenta block left')
     text.append('push the cyan block forward')
+    text.append('push the magenta block forward')
+    text.append('push the cyan block left')
+    text.append('push the yellow block left')
+    text.append('push the yellow block forward')
+    text.append('push the lime block left')
     # get embeddings
-    text = clip.tokenize(text).to(device)
+    tokens = clip.tokenize(text).to(device)
     with torch.no_grad():
-        text_features = clip_model.encode_text(text)
+        text_features = clip_model.encode_text(tokens)
     # put in dictionary
-    for i in range(3):
-        task_embeds['reach_target'].append(text_features[i].float())
+    for i in range(len(text)):
+        task_embeds['reach_target'].append(text_features[i].float().detach().cpu().numpy())
 
     environment = hydra.utils.instantiate(cfg.environment)
     train_dataset = hydra.utils.instantiate(cfg.train_dataset, task_embeds=task_embeds)
@@ -67,20 +72,21 @@ def main(cfg: DictConfig) -> None:
     best_val_loss = float('inf')
     for step in step_tqdm:
         model.train()
-        if step == 6000:
+        if step == 4000:
             for g in optimizer.param_groups:
                 g['lr'] = 1e-4
-        if step == 9000:
+        if step == 6000:
             for g in optimizer.param_groups:
                 g['lr'] = 5e-5
         try:
-            image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            image, image2, task_embed, xyz, axangle, gripper, curr_gripper = next(train_dataloader_iter)
         except StopIteration:
             print('restarting train dataloader')
             train_dataloader_iter = iter(train_dataloader)
-            image, task_embed, xyz, axangle, gripper = next(train_dataloader_iter)
+            image, image2, task_embed, xyz, axangle, gripper, curr_gripper = next(train_dataloader_iter)
         model.train()
         image = image.to(cfg.train.device)
+        image2 = image2.to(cfg.train.device)
         action = xyz.to(cfg.train.device)
         # if step <= 10:
         #     print(np.linalg.norm(xyz, axis=-1), np.linalg.norm(axangle, axis=-1), gripper)
@@ -89,12 +95,12 @@ def main(cfg: DictConfig) -> None:
         #     plt.show()
         task_embed = task_embed.to(cfg.train.device)
         optimizer.zero_grad()
-        pred_action = model.forward(image, task_embed)
+        pred_action = model.forward(image, image2, task_embed)
         # input(pred_action[1].shape)
         # input(action[1].shape)
         # scale action y z by 10
-        action_scale = 20
-        loss = loss_fn(pred_action, action_scale*action[:, 0, 1:])*100
+        action_scale = 40
+        loss = loss_fn(pred_action, action_scale*action[:, 0, :])*100
         # if step % 100 == 0:
         #     print('pred_action', pred_action[0].detach().cpu().numpy())
         #     print('action', action_scale*action[0, 0, :].detach().cpu().numpy())

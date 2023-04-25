@@ -94,11 +94,19 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
                     rgbs[-1].append(obs.front_rgb.copy().transpose(2, 0, 1))
                     action = model.get_action(obs, task_embed)
                     try:
-                        obs, reward, terminate = task.step(action)
+                        obs, _, terminate = task.step(action)
                     except rlbench.backend.exceptions.InvalidActionError:
                         print('Invalid action')
                         break
                 break
+        # if it was success, append green image
+        if reward == 1:
+            green_im = np.ones((3, 128, 128))
+            green_im[1] *= 255
+            # cast to uint8
+            green_im = green_im.astype(np.uint8)
+            for _ in range(10):
+                rgbs[-1].append(green_im)
 
     # environment.shutdown()
     return success / n_episodes, rgbs

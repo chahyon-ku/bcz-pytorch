@@ -72,10 +72,10 @@ def main(cfg: DictConfig) -> None:
     best_val_loss = float('inf')
     for step in step_tqdm:
         model.train()
-        if step == 4000:
+        if step == 7000:
             for g in optimizer.param_groups:
                 g['lr'] = 1e-4
-        if step == 6000:
+        if step == 10000:
             for g in optimizer.param_groups:
                 g['lr'] = 5e-5
         try:

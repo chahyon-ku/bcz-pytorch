@@ -30,9 +30,9 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
     rgbs = []
     for i_episode in range(n_episodes):
         rgbs.append([])
-        # task.set_variation(i_episode % 8)
-        task.set_variation(7)
-        
+        task.set_variation(i_episode % 7)
+        # task.set_variation(7)
+
         descriptions, obs = task.reset()
         description = descriptions[0]
         # tokenize description
@@ -49,10 +49,15 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
             except rlbench.backend.exceptions.InvalidActionError:
                 print('Invalid action')
                 break
+            # check if it's the last step
+            if j == n_steps_per_episode - 1:
+                terminate = True
             if terminate:
                 if reward == 1:
                     print('Success')
                     success += 1
+                else:
+                    print('Failure')
                 # do 10 more steps then break
                 for k in range(10):
                     rgbs[-1].append(obs.front_rgb.copy().transpose(2, 0, 1))
@@ -60,7 +65,6 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
                     try:
                         obs, _, terminate = task.step(action)
                     except rlbench.backend.exceptions.InvalidActionError:
-                        print('Invalid action')
                         break
                 break
         # if it was success, append green image
@@ -71,8 +75,8 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
             green_im = green_im.astype(np.uint8)
             for _ in range(10):
                 rgbs[-1].append(green_im)
-
-    print('success rate: ', success / n_episodes)
+        print('success rate: ', success / (i_episode + 1), i_episode + 1)
+    print('final success rate: ', success / n_episodes)
     # environment.shutdown()
     return success / n_episodes, rgbs
 

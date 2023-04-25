@@ -76,12 +76,14 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
             im = Image.new('RGB', (128, 128), color='red')
         # draw text on image
         draw = ImageDraw.Draw(im)
-        font = ImageFont.truetype('arial.ttf', 20)
+        font = ImageFont.truetype('/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf', 10)
         draw.text((10, 10), description, font=font, fill='black')
         # cast to np array uint8
         im = np.array(im)
         # cast to uint8
         im = im.astype(np.uint8)
+        # transpose to (3, 128, 128)
+        im = im.transpose(2, 0, 1)
         for _ in range(10):
             rgbs[-1].append(im)
         print('success rate: ', success / (i_episode + 1), i_episode + 1)

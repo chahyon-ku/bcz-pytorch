@@ -7,7 +7,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 class BC(nn.Module):
-    def __init__(self, freeze = False):
+    def __init__(self, freeze = False, h1=512):
         super().__init__()
 
         # get pretrained resnet18 model
@@ -24,9 +24,9 @@ class BC(nn.Module):
                 param.requires_grad = False
 
         # create new layers
-        self.fc1 = nn.Linear(1024 + 512, 256)
+        self.fc1 = nn.Linear(1024 + 512, h1)
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(256, 256)
+        self.fc2 = nn.Linear(h1, 256)
         self.fc3 = nn.Linear(256, 3)
 
     def forward(self, x, y, text):

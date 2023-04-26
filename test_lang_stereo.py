@@ -30,7 +30,7 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
     rgbs = []
     for i_episode in range(n_episodes):
         rgbs.append([])
-        task.set_variation(i_episode % 4)
+        task.set_variation(i_episode % 7)
         # task.set_variation(7)
 
         descriptions, obs = task.reset()
@@ -77,7 +77,11 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
         # draw text on image
         draw = ImageDraw.Draw(im)
         font = ImageFont.truetype('/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf', 10)
-        draw.text((10, 10), description, font=font, fill='black')
+        d = description.split(' ')
+        d1 = ' '.join(d[:len(d) // 2])
+        d2 = ' '.join(d[len(d) // 2:])
+        draw.text((10, 10), d1, font=font, fill='black')
+        draw.text((10, 20), d2, font=font, fill='black')
         # cast to np array uint8
         im = np.array(im)
         # cast to uint8

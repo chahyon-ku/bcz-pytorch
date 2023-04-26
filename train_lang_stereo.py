@@ -27,7 +27,7 @@ def main(cfg: DictConfig) -> None:
     input(cfg)
 
     # create clip model
-    device = 'cuda:1'
+    device = 'cuda:0'
     clip_model, preprocess = clip.load("ViT-B/32", device=device)
     clip_model.eval()
     # create list of text descriptions
@@ -72,10 +72,10 @@ def main(cfg: DictConfig) -> None:
     best_val_loss = float('inf')
     for step in step_tqdm:
         model.train()
-        if step == 7000:
+        if step == 10000:
             for g in optimizer.param_groups:
                 g['lr'] = 1e-4
-        if step == 10000:
+        if step == 13000:
             for g in optimizer.param_groups:
                 g['lr'] = 5e-5
         try:
@@ -100,7 +100,7 @@ def main(cfg: DictConfig) -> None:
         # input(action[1].shape)
         # scale action y z by 10
         action_scale = 40
-        loss = loss_fn(pred_action, action_scale*action[:, 0, :])*100
+        loss = loss_fn(pred_action, action_scale*action)*100
         # if step % 100 == 0:
         #     print('pred_action', pred_action[0].detach().cpu().numpy())
         #     print('action', action_scale*action[0, 0, :].detach().cpu().numpy())

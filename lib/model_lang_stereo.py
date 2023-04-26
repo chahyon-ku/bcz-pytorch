@@ -27,7 +27,7 @@ class BC(nn.Module):
         self.fc1 = nn.Linear(1024 + 512, h1)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(h1, 256)
-        self.fc3 = nn.Linear(256, 3)
+        self.fc3 = nn.Linear(256, 30)
 
     def forward(self, x, y, text):
         # pass x through resnet
@@ -45,12 +45,15 @@ class BC(nn.Module):
         x = self.fc2(x)
         x = self.relu(x)
         x = self.fc3(x)
+        # reshape
+        x = torch.reshape(x, (-1, 10, 3))
+
         return x
     
     def get_action(self, obs, task_embed, zero=False):
         # obs: rlbench.observation.Observation
         # task_embed: (512,)
-        device = 'cuda:1'
+        device = 'cuda:0'
         image = TF.to_tensor(Image.fromarray(obs.front_rgb)).unsqueeze(0).to(device)
         image2 = TF.to_tensor(Image.fromarray(obs.left_shoulder_rgb)).unsqueeze(0).to(device)
         xyz = self.forward(image, image2, task_embed)
@@ -64,7 +67,7 @@ class BC(nn.Module):
         # xyz: (batch_size, 10, 3)
         # axangle: (batch_size, 10, 4)
         # gripper: (batch_size, 10, 1)
-        xyz = xyz.detach().cpu().numpy()[0]
+        xyz = xyz.detach().cpu().numpy()[0, 0]
         # axangle = axangle.detach().cpu().numpy()[0, 0]
         # gripper = gripper.detach().cpu().numpy()[0, 0]
         curr_xyz = obs.gripper_pose[:3]

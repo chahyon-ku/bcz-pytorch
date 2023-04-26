@@ -12,11 +12,11 @@ import numpy as np
 def main(cfg: DictConfig) -> None:
     output_dir = HydraConfig.get().run.dir
     input(cfg)
-    device = 'cuda:1'
+    device = 'cuda:0'
     # initialize model
     model = BC()
     # load model
-    model.load_state_dict(torch.load('models/model_push_block_60.pt'))
+    model.load_state_dict(torch.load('models/model_push_block_66.pt'))
     model.eval()
     model.to(device)
 

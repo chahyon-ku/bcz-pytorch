@@ -162,6 +162,12 @@
             <div class="container">
                 <h2 class="title is-3">Demonstrations</h2>
                 <div id="results-carousel" class="carousel results-carousel">
+                    <div class="item item-video0 has-text-centered">
+                        <video poster="" id="video0" autoplay controls muted loop height="100%">
+                            <!-- Your video file here -->
+                            <source src="static/videos/knock_eraser_real_demo.mov" type="video/mp4">
+                        </video>
+                    </div>
                     <div class="item item-video1 has-text-centered">
                         <video poster="" id="video1" autoplay controls muted loop height="100%">
                             <!-- Your video file here -->
@@ -191,6 +197,53 @@
         </div>
     </section>
     <!-- End video carousel -->
+
+    <!-- Begin Evaluation Video Carousel -->
+    <section class="hero is-small">
+        <div class="hero-body">
+            <div class="container">
+                <h2 class="title is-3">Evaluations</h2>
+                <div id="results-carousel" class="carousel results-carousel">
+                    <div class="item has-text-centered">
+                        <!-- Your image here -->
+                        <img src="static/images/reach_target_eval.gif" alt="Reach Target 1 Color Evaluation" />
+                        <h2 class="subtitle has-text-centered">
+                            Model trained and evaluated on 1 color (red) reach target task.
+                        </h2>
+                    </div>
+                    <div class="item has-text-centered">
+                        <!-- Your image here -->
+                        <img src="static/images/reach_target_3task_eval.gif" alt="Reach Target 3 Colors Evaluation" />
+                        <h2 class="subtitle has-text-centered">
+                            Model trained and evaluated on 3 color (red, green, blue) reach target task with language conditioning.
+                        </h2>
+                    </div>
+                    <div class="item has-text-centered">
+                        <!-- Your image here -->
+                        <img src="static/images/reach_target_6task_eval.gif" alt="Reach Target 6 Colors Evaluation" />
+                        <h2 class="subtitle has-text-centered">
+                            Model trained and evaluated on 6 color (red, green, blue, cyan, yellow, magenta) reach target task with language conditioning.
+                        </h2>
+                    </div>
+                    <div class="item has-text-centered">
+                        <!-- Your image here -->
+                        <img src="static/images/pick_lemon_eval.gif" alt="Pick Lemon Evaluation" />
+                        <h2 class="subtitle has-text-centered">
+                            Model trained and evaluated on pick lime task.
+                        </h2>
+                    </div>
+                    <div class="item has-text-centered">
+                        <!-- Your image here -->
+                        <img src="static/images/push_block_seen_eval.gif" alt="Push Block Evaluation" />
+                        <h2 class="subtitle has-text-centered">
+                            Model trained and evaluated on 7 push block tasks (push {cyan, yellow, magenta, lime} {left, forward}).
+                        </h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- End Evaluation Video Carousel -->
 
     <!-- Paper poster -->
     <section class="hero is-small is-light">

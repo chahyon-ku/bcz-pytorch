@@ -1,10 +1,10 @@
 hydra:
   run:
-    dir: ./outputs/test-reach_target-${now:%Y.%m.%d-%H.%M.%S}
+    dir: ./outputs/test-1v1t-${now:%Y.%m.%d-%H.%M.%S}
 
 defaults:
   - ../envs/base.yaml@_global_/test
-  - ../tasks/reach_target.yaml@_global_/test
+  - ../tasks/bcz_pick_and_place_tight.yaml@_global_/test
   - _self_
 
 model:
@@ -14,7 +14,7 @@ model:
     task_embed_dim: 768
   policy_decoder:
     _target_: lib.mlp_decoder.MLPDecoder
-  model_path: /home/rpm/Class/CSCI5890-DEEPROB/bc-z/bcz-pytorch/outputs/train-reach_target-2023.04.06-22.26.51/model_5000.pt
+  model_path: /media/rpm/Data/CSCI5890-DEEPROB/bc-z/bcz-pytorch/train/train-bcz_tight_rgbd_early_xyz_1v1t-2023.05.01-18.42.31/model_10000.pt
 
 language_encoder:
   _target_: sentence_transformers.SentenceTransformer

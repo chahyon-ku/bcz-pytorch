@@ -34,8 +34,8 @@ environment:
     front_camera:
       _target_: rlbench.observation_config.CameraConfig
       image_size:
-        - 128
-        - 128
+        - 256
+        - 256
       rgb: True
       depth: True
       mask: False

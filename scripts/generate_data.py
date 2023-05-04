@@ -26,9 +26,9 @@ from absl import flags
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('save_path',
-                    '/home/rpm/Class/CSCI5890-DEEPROB/bc-z/bcz-pytorch/data_1000',
+                    '/media/rpm/Data/CSCI5890-DEEPROB/bc-z/bcz-pytorch/data',
                     'Where to save the demos.')
-flags.DEFINE_list('tasks', ['open_jar', 'place_shape_in_shape_sorter'],
+flags.DEFINE_list('tasks', ['bcz_pick_and_place_tight'],
                   'The tasks to collect. If empty, all tasks are collected.')
 flags.DEFINE_list('image_size', [128, 128],
                   'The size of the images tp save.')
@@ -76,68 +76,68 @@ def save_demo(demo, example_path):
     front_depth_path = os.path.join(example_path, FRONT_DEPTH_FOLDER)
     front_mask_path = os.path.join(example_path, FRONT_MASK_FOLDER)
 
-    check_and_make(left_shoulder_rgb_path)
-    check_and_make(left_shoulder_depth_path)
-    check_and_make(left_shoulder_mask_path)
-    check_and_make(right_shoulder_rgb_path)
-    check_and_make(right_shoulder_depth_path)
-    check_and_make(right_shoulder_mask_path)
-    check_and_make(overhead_rgb_path)
-    check_and_make(overhead_depth_path)
-    check_and_make(overhead_mask_path)
-    check_and_make(wrist_rgb_path)
-    check_and_make(wrist_depth_path)
-    check_and_make(wrist_mask_path)
+    # check_and_make(left_shoulder_rgb_path)
+    # check_and_make(left_shoulder_depth_path)
+    # check_and_make(left_shoulder_mask_path)
+    # check_and_make(right_shoulder_rgb_path)
+    # check_and_make(right_shoulder_depth_path)
+    # check_and_make(right_shoulder_mask_path)
+    # check_and_make(overhead_rgb_path)
+    # check_and_make(overhead_depth_path)
+    # check_and_make(overhead_mask_path)
+    # check_and_make(wrist_rgb_path)
+    # check_and_make(wrist_depth_path)
+    # check_and_make(wrist_mask_path)
     check_and_make(front_rgb_path)
     check_and_make(front_depth_path)
     check_and_make(front_mask_path)
 
     for i, obs in enumerate(demo):
-        left_shoulder_rgb = Image.fromarray(obs.left_shoulder_rgb)
-        left_shoulder_depth = utils.float_array_to_rgb_image(
-            obs.left_shoulder_depth, scale_factor=DEPTH_SCALE)
-        left_shoulder_mask = Image.fromarray(
-            (obs.left_shoulder_mask * 255).astype(np.uint8))
-        right_shoulder_rgb = Image.fromarray(obs.right_shoulder_rgb)
-        right_shoulder_depth = utils.float_array_to_rgb_image(
-            obs.right_shoulder_depth, scale_factor=DEPTH_SCALE)
-        right_shoulder_mask = Image.fromarray(
-            (obs.right_shoulder_mask * 255).astype(np.uint8))
-        overhead_rgb = Image.fromarray(obs.overhead_rgb)
-        overhead_depth = utils.float_array_to_rgb_image(
-            obs.overhead_depth, scale_factor=DEPTH_SCALE)
-        overhead_mask = Image.fromarray(
-            (obs.overhead_mask * 255).astype(np.uint8))
-        wrist_rgb = Image.fromarray(obs.wrist_rgb)
-        wrist_depth = utils.float_array_to_rgb_image(
-            obs.wrist_depth, scale_factor=DEPTH_SCALE)
-        wrist_mask = Image.fromarray((obs.wrist_mask * 255).astype(np.uint8))
+        # left_shoulder_rgb = Image.fromarray(obs.left_shoulder_rgb)
+        # left_shoulder_depth = utils.float_array_to_rgb_image(
+        #     obs.left_shoulder_depth, scale_factor=DEPTH_SCALE)
+        # left_shoulder_mask = Image.fromarray(
+        #     (obs.left_shoulder_mask * 255).astype(np.uint8))
+        # right_shoulder_rgb = Image.fromarray(obs.right_shoulder_rgb)
+        # right_shoulder_depth = utils.float_array_to_rgb_image(
+        #     obs.right_shoulder_depth, scale_factor=DEPTH_SCALE)
+        # right_shoulder_mask = Image.fromarray(
+        #     (obs.right_shoulder_mask * 255).astype(np.uint8))
+        # overhead_rgb = Image.fromarray(obs.overhead_rgb)
+        # overhead_depth = utils.float_array_to_rgb_image(
+        #     obs.overhead_depth, scale_factor=DEPTH_SCALE)
+        # overhead_mask = Image.fromarray(
+        #     (obs.overhead_mask * 255).astype(np.uint8))
+        # wrist_rgb = Image.fromarray(obs.wrist_rgb)
+        # wrist_depth = utils.float_array_to_rgb_image(
+        #     obs.wrist_depth, scale_factor=DEPTH_SCALE)
+        # wrist_mask = Image.fromarray((obs.wrist_mask * 255).astype(np.uint8))
         front_rgb = Image.fromarray(obs.front_rgb)
         front_depth = utils.float_array_to_rgb_image(
             obs.front_depth, scale_factor=DEPTH_SCALE)
         front_mask = Image.fromarray((obs.front_mask * 255).astype(np.uint8))
 
-        left_shoulder_rgb.save(
-            os.path.join(left_shoulder_rgb_path, IMAGE_FORMAT % i))
-        left_shoulder_depth.save(
-            os.path.join(left_shoulder_depth_path, IMAGE_FORMAT % i))
-        left_shoulder_mask.save(
-            os.path.join(left_shoulder_mask_path, IMAGE_FORMAT % i))
-        right_shoulder_rgb.save(
-            os.path.join(right_shoulder_rgb_path, IMAGE_FORMAT % i))
-        right_shoulder_depth.save(
-            os.path.join(right_shoulder_depth_path, IMAGE_FORMAT % i))
-        right_shoulder_mask.save(
-            os.path.join(right_shoulder_mask_path, IMAGE_FORMAT % i))
-        overhead_rgb.save(
-            os.path.join(overhead_rgb_path, IMAGE_FORMAT % i))
-        overhead_depth.save(
-            os.path.join(overhead_depth_path, IMAGE_FORMAT % i))
-        overhead_mask.save(
-            os.path.join(overhead_mask_path, IMAGE_FORMAT % i))
-        wrist_rgb.save(os.path.join(wrist_rgb_path, IMAGE_FORMAT % i))
-        wrist_depth.save(os.path.join(wrist_depth_path, IMAGE_FORMAT % i))
-        wrist_mask.save(os.path.join(wrist_mask_path, IMAGE_FORMAT % i))
+        # left_shoulder_rgb.save(
+        #     os.path.join(left_shoulder_rgb_path, IMAGE_FORMAT % i))
+        # left_shoulder_depth.save(
+        #     os.path.join(left_shoulder_depth_path, IMAGE_FORMAT % i))
+        # left_shoulder_mask.save(
+        #     os.path.join(left_shoulder_mask_path, IMAGE_FORMAT % i))
+        # right_shoulder_rgb.save(
+        #     os.path.join(right_shoulder_rgb_path, IMAGE_FORMAT % i))
+        # right_shoulder_depth.save(
+        #     os.path.join(right_shoulder_depth_path, IMAGE_FORMAT % i))
+        # right_shoulder_mask.save(
+        #     os.path.join(right_shoulder_mask_path, IMAGE_FORMAT % i))
+        # overhead_rgb.save(
+        #     os.path.join(overhead_rgb_path, IMAGE_FORMAT % i))
+        # overhead_depth.save(
+        #     os.path.join(overhead_depth_path, IMAGE_FORMAT % i))
+        # overhead_mask.save(
+        #     os.path.join(overhead_mask_path, IMAGE_FORMAT % i))
+        # wrist_rgb.save(os.path.join(wrist_rgb_path, IMAGE_FORMAT % i))
+        # wrist_depth.save(os.path.join(wrist_depth_path, IMAGE_FORMAT % i))
+        # wrist_mask.save(os.path.join(wrist_mask_path, IMAGE_FORMAT % i))
         front_rgb.save(os.path.join(front_rgb_path, IMAGE_FORMAT % i))
         front_depth.save(os.path.join(front_depth_path, IMAGE_FORMAT % i))
         front_mask.save(os.path.join(front_mask_path, IMAGE_FORMAT % i))

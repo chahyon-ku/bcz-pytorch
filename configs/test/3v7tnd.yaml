@@ -1,0 +1,47 @@
+hydra:
+  run:
+    dir: ./test/test-${hydra:job.config_name}-${now:%Y.%m.%d-%H.%M.%S}
+
+defaults:
+  - ../envs/base.yaml@_global_
+  - ../tasks/bcz_pick_and_place.yaml@_global_/test
+  - _self_
+
+model:
+  _target_: lib.bcz_model.BCZModel
+  vision_encoders:
+    _target_: torch.nn.ModuleList
+    modules:
+      - _target_: lib.film_resnet.film_resnet18
+        task_embed_dim: 768
+        in_channels: 4
+        film_on: True
+  policy_decoder:
+    _target_: lib.mlp_decoder.MLPDecoder
+    input_dim: 512
+    hidden_dim: 256
+  views: [front_rgb, front_depth]
+  task_embed_std: 0
+  fusion: early
+  action_scale: [.01, 0.]
+  action_indices: [0, 0, 0]
+
+model_glob: /media/rpm/Data/CSCI5890-DEEPROB/bc-z/bcz-pytorch/train/train-bcz_tight_rgbd_early_xyz_3v7t-2023.05.02-03.30.22/model_20000.pt
+
+language_encoder:
+  _target_: sentence_transformers.SentenceTransformer
+  model_name_or_path: bert-base-nli-mean-tokens
+  cache_folder: cache
+
+test:
+  _target_: test.test
+  n_episodes: 40
+  n_steps_per_episode: 200
+  variations: [15, 23, 31]
+  device: cuda:1
+environment:
+  headless: True
+
+wandb:
+  project: bcz-pytorch
+  tags: [bcz, test]

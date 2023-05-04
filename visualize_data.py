@@ -12,7 +12,7 @@ from scipy.spatial.transform import Rotation as R
 
 @hydra.main(version_base=None, config_path='./configs/visualize', config_name='base')
 def main(cfg: DictConfig) -> None:
-    env: rlbench.Environment = hydra.utils.instantiate(cfg.environment)
+    env: rlbench.Environment = hydra.utils.instantiate(cfg.environment, headless=False)
     task = env.get_task(hydra.utils.get_class(cfg.task))
     demos = task.get_demos(**cfg.demos)
     
@@ -24,11 +24,10 @@ def main(cfg: DictConfig) -> None:
             action = np.concatenate([obs.gripper_pose, [obs.gripper_open]])
             xyz = obs.gripper_pose[:3]
             axangle = R.from_quat(obs.gripper_pose[3:]).as_rotvec()
-            print(xyz, axangle)
-            print(xyz - prev_xyz, axangle - prev_axangle)
+            # print(xyz, axangle)
+            # print(xyz - prev_xyz, axangle - prev_axangle)
             prev_xyz = xyz
             prev_axangle = axangle
-            input()
             task.step(action)
 
     env.shutdown()

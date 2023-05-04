@@ -15,13 +15,14 @@ import torchvision.transforms as transforms
 
 
 class DemoDataset(torch.utils.data.Dataset):
-    def __init__(self, variations, demos_config, action_mode, task_embeds, views, action_scale):
+    def __init__(self, variations, demos_config, action_mode, task_embeds, views, action_scale, action_annealed):
         self.data = None
         self.action_mode = action_mode
         self.demos_config = demos_config
         self.variations = variations
         self.len = sum([sum([len(demo) for demo in rlbench.utils.get_stored_demos(**demos_config, variation_number=variation)]) for variation in variations])
         self.action_scale = action_scale
+        self.action_annealed = action_annealed
         print(self.len)
 
         self.task_embeds = task_embeds
@@ -91,7 +92,7 @@ class DemoDataset(torch.utils.data.Dataset):
                     this_axangles = this_axangles * self.action_scale[1]
 
                     this_images = {view: [images[view][0][i_obs]] for view in self.views}
-                    data.append((this_images, self.task_embeds['reach_target'][variation],
+                    data.append((this_images, self.task_embeds[self.demos_config.task_name][variation],
                                  this_xyzs, this_axangles, this_grippers))
         return data
     
@@ -109,14 +110,15 @@ class DemoDataset(torch.utils.data.Dataset):
             xyz_next = arm_next[:3]
             axangle_next = R.from_quat(arm_next[3:]).as_rotvec()
             xyz_delta = xyz_next - xyz_curr
-            if xyz_mag == 0:
-                axangle_delta = axangle_next - axangle_curr
-                gripper_delta = [demo[i_next].gripper_open]
+            # if xyz_mag == 0:
+            axangle_delta = axangle_next - axangle_curr
+            gripper_delta = [demo[i_next].gripper_open]
 
             i_next += 1
             xyz_mag = np.linalg.norm(xyz_delta)
+            if not self.action_annealed:
+                break
             # print(i_next - i_curr, xyz_mag)
-            break
         return xyz_curr, axangle_curr, gripper, xyz_delta, axangle_delta, gripper_delta
             
 

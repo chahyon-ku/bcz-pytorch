@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 class BCZModel(torch.nn.Module):
-    def __init__(self, vision_encoders, policy_decoder, views, task_embed_std, fusion, action_scale, model_path=None) -> None:
+    def __init__(self, vision_encoders, policy_decoder, views, task_embed_std, fusion, action_scale, action_indices, model_path=None) -> None:
         super().__init__()
         self.vision_encoders = vision_encoders
         self.policy_decoder = policy_decoder
@@ -17,6 +17,7 @@ class BCZModel(torch.nn.Module):
         self.task_embed_std = task_embed_std
         self.fusion = fusion
         self.action_scale = action_scale
+        self.action_indices = action_indices
         if model_path is not None:
             self.load_state_dict(torch.load(model_path))
 
@@ -76,9 +77,9 @@ class BCZModel(torch.nn.Module):
         # xyz: (batch_size, 10, 3)
         # axangle: (batch_size, 10, 4)
         # gripper: (batch_size, 10, 1)
-        xyz = xyz.detach().cpu().numpy()[0, 0]
-        axangle = axangle.detach().cpu().numpy()[0, 0]
-        gripper = gripper.detach().cpu().numpy()[0, 0]
+        xyz = xyz.detach().cpu().numpy()[0, self.action_indices[0]]
+        axangle = axangle.detach().cpu().numpy()[0, self.action_indices[1]]
+        gripper = gripper.detach().cpu().numpy()[0, self.action_indices[2]]
         curr_xyz = obs.gripper_pose[:3]
         curr_quat = obs.gripper_pose[3:]
         curr_axangle = R.from_quat(curr_quat).as_rotvec()

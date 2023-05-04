@@ -1,9 +1,9 @@
 defaults:
   - ../envs/base.yaml@_global_
-  - ../tasks/bcz_pick_and_place.yaml@_global_
+  - ../tasks/pick_lemon.yaml@_global_
 
 demos:
-  amount: 200
+  amount: 10
   live_demos: False
   image_paths: True
   max_attempts: 1

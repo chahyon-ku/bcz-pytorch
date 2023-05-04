@@ -18,6 +18,7 @@ import os
 import logging
 import wandb
 from hydra.core.hydra_config import HydraConfig
+import lib.task_embeddings
 os.environ['TOKENIZERS_PARALLELISM']='true'
 
 
@@ -27,16 +28,8 @@ def main(cfg: DictConfig) -> None:
     # input(cfg)
 
     logging.getLogger('sentence_transformers.SentenceTransformer').setLevel(logging.ERROR)
-    task_embeds = {'reach_target': []}
     language_encoder = sentence_transformers.SentenceTransformer('bert-base-nli-mean-tokens', cache_folder='cache', device=cfg.train.device)
-    for variation in range(13):
-        color_name, _ = colors[variation]
-        languages = ['reach the %s target' % color_name,
-                        'touch the %s ball with the panda gripper' % color_name,
-                        'reach the %s sphere' % color_name]
-        language = 'reach the %s target' % color_name
-        task_embed = language_encoder.encode([language])[0]
-        task_embeds['reach_target'].append(task_embed)
+    task_embeds = lib.task_embeddings.get_task_embeddings(language_encoder)
 
     environment = hydra.utils.instantiate(cfg.environment)
     train_dataset = hydra.utils.instantiate(cfg.train_dataset, task_embeds=task_embeds)
@@ -92,7 +85,7 @@ def main(cfg: DictConfig) -> None:
             success_rate, rgbs = hydra.utils.instantiate(cfg.test, model=model, language_encoder=language_encoder, environment=environment, device=cfg.train.device)
             rgbs = rgbs[:10]
             wandb.log({'test/success_rate': success_rate}, step=step)
-            wandb.log({'test/rgb': [wandb.Video(np.stack(rgb, axis=0), fps=10) for rgb in rgbs]}, step=step)
+            wandb.log({'test/rgb': [wandb.Video(np.stack(rgb, axis=0), fps=8) for rgb in rgbs]}, step=step)
             
         
         if step % cfg.train.save_interval == 0:

@@ -79,14 +79,14 @@ def test(task, model, language_encoder, n_episodes, n_steps_per_episode, device,
 def main(cfg: DictConfig) -> None:
     output_dir = HydraConfig.get().run.dir
 
+    environment = hydra.utils.instantiate(cfg.environment)
     logging.getLogger('sentence_transformers.SentenceTransformer').setLevel(logging.ERROR)
     language_encoder = hydra.utils.instantiate(cfg.language_encoder)
     model = hydra.utils.instantiate(cfg.model)
 
     model_paths = glob.glob(cfg.model_glob)
-    print(model_paths, cfg.model_glob)
     model_paths = sorted(model_paths, key=lambda x: int(x.split('_')[-1].split('.')[0]))
-    model_paths = list(filter(lambda x: (int(x.split('_')[-1].split('.')[0]) % 5000) == 0, model_paths))
+    # model_paths = list(filter(lambda x: (int(x.split('_')[-1].split('.')[0]) % 5000) == 0, model_paths))
     
     print(model_paths, cfg.model_glob)
     wandb.login()
@@ -97,13 +97,14 @@ def main(cfg: DictConfig) -> None:
         **cfg.wandb
     )
 
-    for model_path in tqdm.tqdm(model_paths):
-        model.load_state_dict(torch.load(model_path))
-        success_rate, rgbs = hydra.utils.instantiate(cfg.test, model=model, language_encoder=language_encoder)
-        rgbs = rgbs[:10]
-        step = int(model_path.split('_')[-1].split('.')[0])
-        wandb.log({'test/success_rate': success_rate}, step=step)
-        wandb.log({'test/rgb': [wandb.Video(np.stack(rgb, axis=0), fps=10) for rgb in rgbs]}, step=step)
+    for model_path in model_paths:
+        for variation in tqdm.tqdm(cfg.test.variations):
+            model.load_state_dict(torch.load(model_path))
+            success_rate, rgbs = hydra.utils.instantiate(cfg.test, model=model, language_encoder=language_encoder, variations=[variation], environment=environment)
+            rgbs = rgbs[:10]
+            step = variation#int(model_path.split('_')[-1].split('.')[0])
+            wandb.log({'test/success_rate': success_rate}, step=step)
+            wandb.log({'test/rgb': [wandb.Video(np.stack(rgb, axis=0), fps=10) for rgb in rgbs]}, step=step)
 
 if __name__ == '__main__':
     main()

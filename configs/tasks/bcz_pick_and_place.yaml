@@ -1,0 +1,1 @@
+task: rlbench.tasks.bcz_pick_and_place.BczPickAndPlace

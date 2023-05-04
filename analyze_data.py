@@ -31,6 +31,7 @@ def main(cfg: DictConfig) -> None:
             
             xyz_deltas.append(xyz - prev_xyz)
             axangle_deltas.append(axangle - prev_axangle)
+            print(axangle - prev_axangle)
     print(np.mean(xyz_deltas, axis=0), np.std(xyz_deltas, axis=0))
     print(np.mean(axangle_deltas, axis=0), np.std(axangle_deltas, axis=0))
 

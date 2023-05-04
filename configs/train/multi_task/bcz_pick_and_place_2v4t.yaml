@@ -1,0 +1,81 @@
+hydra:
+  run:
+    dir: ./train/train-${hydra:job.config_name}-${now:%Y.%m.%d-%H.%M.%S}
+
+defaults:
+  - ../../envs/base.yaml@_global_
+  - ../../tasks/bcz_pick_and_place.yaml@_global_/test
+  - _self_
+
+train_dataset:
+  _target_: lib.demo_dataset.DemoDataset
+  variations: [16, 17, 18, 19]
+  demos_config:
+    amount: 200
+    image_paths: True
+    dataset_root: data
+    task_name: bcz_pick_and_place
+    obs_config:
+      _target_: rlbench.observation_config.ObservationConfig
+    random_selection: False
+    from_episode_number: 0
+  action_mode:
+    _target_: rlbench.action_modes.action_mode.MoveArmThenGripper
+    arm_action_mode:
+      _target_: rlbench.action_modes.arm_action_modes.EndEffectorPoseViaIK
+      absolute_mode: False
+    gripper_action_mode:
+      _target_: rlbench.action_modes.gripper_action_modes.Discrete
+  views: [front_rgb, front_depth]
+  action_scale: [100, 0.01]
+  action_annealed: True
+
+train_dataloader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: 64
+  shuffle: True
+  num_workers: 1
+  persistent_workers: True
+
+model:
+  _target_: lib.bcz_model.BCZModel
+  vision_encoders:
+    _target_: torch.nn.ModuleList
+    modules:
+      - _target_: lib.film_resnet.film_resnet18
+        task_embed_dim: 768
+        in_channels: 4
+        film_on: True
+  policy_decoder:
+    _target_: lib.mlp_decoder.MLPDecoder
+    input_dim: 512
+    hidden_dim: 256
+  views: [front_rgb, front_depth]
+  task_embed_std: 0
+  fusion: early
+  action_scale: [.01, 0.]
+  action_indices: [0, 0, 0]
+
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 1e-3
+
+train:
+  n_steps: 20000
+  log_interval: 10
+  eval_interval: 1000
+  save_interval: 1000
+  device: cuda:0
+  weights: [100, 0, 0.5]
+
+test:
+  _target_: test.test
+  n_episodes: 50
+  n_steps_per_episode: 200
+  variations: [16, 17, 18, 19]
+environment:
+  headless: True
+
+wandb:
+  project: bcz-pytorch
+  tags: [reach_target, single_task, train]
